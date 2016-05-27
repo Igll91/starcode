@@ -12,6 +12,8 @@ use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
 use Phalcon\Mvc\Model\Metadata\Memory as MetaDataAdapter;
 use Phalcon\Session\Adapter\Files as SessionAdapter;
 use Phalcon\Flash\Direct as Flash;
+use Phalcon\Mvc\Dispatcher;
+use Phalcon\Events\Manager as EventsManager;
 
 /**
  * The FactoryDefault Dependency Injector automatically register the right services providing a full stack framework
@@ -38,19 +40,19 @@ $di->setShared('view', function () use ($config) {
     $view->setViewsDir($config->application->viewsDir);
 
     $view->registerEngines(array(
-        '.volt' => function ($view, $di) use ($config) {
+                               '.volt'  => function ($view, $di) use ($config) {
 
-            $volt = new VoltEngine($view, $di);
+                                   $volt = new VoltEngine($view, $di);
 
-            $volt->setOptions(array(
-                'compiledPath' => $config->application->cacheDir,
-                'compiledSeparator' => '_'
-            ));
+                                   $volt->setOptions(array(
+                                                         'compiledPath'      => $config->application->cacheDir,
+                                                         'compiledSeparator' => '_'
+                                                     ));
 
-            return $volt;
-        },
-        '.phtml' => 'Phalcon\Mvc\View\Engine\Php'
-    ));
+                                   return $volt;
+                               },
+                               '.phtml' => 'Phalcon\Mvc\View\Engine\Php'
+                           ));
 
     return $view;
 });
@@ -60,7 +62,7 @@ $di->setShared('view', function () use ($config) {
  */
 $di->setShared('db', function () use ($config) {
     $dbConfig = $config->database->toArray();
-    $adapter = $dbConfig['adapter'];
+    $adapter  = $dbConfig['adapter'];
     unset($dbConfig['adapter']);
 
     $class = 'Phalcon\Db\Adapter\Pdo\\' . $adapter;
@@ -80,11 +82,11 @@ $di->setShared('modelsMetadata', function () {
  */
 $di->set('flash', function () {
     return new Flash(array(
-        'error'   => 'alert alert-danger',
-        'success' => 'alert alert-success',
-        'notice'  => 'alert alert-info',
-        'warning' => 'alert alert-warning'
-    ));
+                         'error'   => 'alert alert-danger',
+                         'success' => 'alert alert-success',
+                         'notice'  => 'alert alert-info',
+                         'warning' => 'alert alert-warning'
+                     ));
 });
 
 /**
@@ -95,4 +97,66 @@ $di->setShared('session', function () {
     $session->start();
 
     return $session;
+});
+
+/**
+ * Dispatcher use a default namespace
+ */
+$di->set('dispatcher', function () {
+    $dispatcher    = new Dispatcher();
+    $eventsManager = new EventsManager;
+    $dispatcher->setDefaultNamespace('Starcode\Controllers');
+
+    /**
+     * Check if the user is allowed to access certain action using the SecurityPlugin
+     */
+    $eventsManager->attach('dispatch:beforeExecuteRoute', new \Starcode\Library\Auth\Security());
+
+    /**
+     * Handle exceptions and not-found exceptions using NotFoundPlugin
+     */
+    $eventsManager->attach('dispatch:beforeException', new \Starcode\Plugins\NotFoundPlugin());
+
+    $dispatcher->setEventsManager($eventsManager);
+
+    return $dispatcher;
+});
+
+/**
+ * Translation
+ */
+$di->setShared('trans', function () use ($di) {
+    $session = $di->getShared('session');
+    $request = $di->getShared('request');
+
+    // Get language code
+    if ($session->has("lg")) {
+        $language = $session->get("lg");
+    } else {
+        // Ask browser what is the best language
+        $language = $request->getBestLanguage();
+    }
+
+    // Check if we have a translation file for that language
+    if (file_exists(APP_PATH . "/app/messages/" . $language . ".php")) {
+        require APP_PATH . "/app/messages/" . $language . ".php";
+    } else {
+        // Fallback to default language
+        require APP_PATH . "/app/messages/hr.php";
+    }
+
+    // Return a translation object
+    return new \Phalcon\Translate\Adapter\NativeArray(array(
+                                                          "content" => $messages
+                                                      ));
+});
+
+/**
+ *
+ */
+$di->setShared('config', $config);
+
+$di->setShared('auth', function () use ($di) {
+    $logger = new \Phalcon\Logger\Adapter\File(APP_PATH . "/app/logs/auth.log", "w");
+    return new \Starcode\Library\Auth\Auth($logger);
 });

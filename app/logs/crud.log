@@ -1,0 +1,3 @@
+[Wed, 11 May 16 23:41:01 +0200][INFO] Mirko created new model of type Starcode\Models\Role with ID 21 from {"client_address":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10.11; rv:48.0) Gecko\/20100101 Firefox\/48.0"}
+[Wed, 11 May 16 23:41:41 +0200][INFO] Mirkodeleted model of type Starcode\Models\Role with ID 21 from {"client_address":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10.11; rv:48.0) Gecko\/20100101 Firefox\/48.0"}
+[Wed, 11 May 16 23:46:51 +0200][INFO] Mirko edited model of type Starcode\Models\Users with ID 9 from {"client_address":"::1","user_agent":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10.11; rv:48.0) Gecko\/20100101 Firefox\/48.0"}

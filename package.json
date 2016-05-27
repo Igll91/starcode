@@ -1,0 +1,12 @@
+{
+  "name": "starcode",
+  "version": "0.0.1",
+  "description": "Selekcijski zadatak",
+  "author": "Silvio Vuk",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-bower-task": "^0.4.0",
+    "grunt-yui-compressor": "^0.4.0"
+  }
+}

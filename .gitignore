@@ -2,5 +2,6 @@
 ### Phalcon template
 /app/cache/
 .idea/
+/node_modules/
 ##/config/development/
 
